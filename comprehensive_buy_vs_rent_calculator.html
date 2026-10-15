@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buy vs. Rent & Invest Calculator</title>
+    
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js for graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        /* Custom scrollbar for tables */
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 6px;
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        input[type=range] {
+            accent-color: #2563eb;
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen flex flex-col">
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
+        <!-- Header -->
+        <div class="mb-8 border-b border-slate-200 pb-6 text-center md:text-left">
+            <h1 class="text-3xl md:text-4xl font-bold tracking-tight text-slate-900 mb-2">Buy vs. Rent & Invest</h1>
+            <p class="text-slate-500 text-lg">Compare real estate with a home loan versus renting and investing the difference.</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- Sidebar: Inputs -->
+            <div class="lg:col-span-4 space-y-6">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+                    
+                    <form id="calcForm" class="space-y-6" onsubmit="event.preventDefault();">
+                        
+                        <!-- Section 1: Property & Loan -->
+                        <div>
+                            <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 border-b border-slate-100 pb-2">Property & Loan</h3>
+                            
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">Property Value (₹)</label>
+                                    <input type="number" id="propPrice" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 font-mono text-sm" value="4000000" min="0" step="100000">
+                                </div>
+                                
+                                <div>
+                                    <div class="flex justify-between mb-1">
+                                        <label class="block text-sm font-medium text-slate-700">Down Payment (%)</label>
+                                        <span id="dpDisplay" class="text-sm font-mono text-blue-600 font-semibold">20%</span>
+                                    </div>
+                                    <div class="flex items-center gap-4">
+                                        <input type="range" id="dpSlider" min="0" max="100" value="20" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer">
+                                        <input type="number" id="dpInput" class="w-20 px-2 py-1 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 font-mono text-sm text-center" value="20" min="0" max="100" step="1">
+                                    </div>
+                                    <div class="text-xs text-slate-500 mt-1">Down Payment Amount: <span id="dpAmountDisplay" class="font-mono font-medium">₹8,00,000</span></div>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-slate-700 mb-1">Loan Interest (%)</label>
+                                        <input type="number" id="loanRate" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 font-mono text-sm" value="8.5" step="0.1">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-slate-700 mb-1">Loan Tenure (Yrs)</label>
+                                        <input type="number" id="loanTenure" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 font-mono text-sm" value="20" min="1" step="1">
+                                    </div>
+                                </div>
+                                <div class="p-3 bg-blue-50 rounded-lg border border-blue-100">
+                                    <div class="text-sm text-blue-800">Calculated Monthly EMI: <span id="emiDisplay" class="font-mono font-bold text-blue-900">₹27,782</span></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section 2: Rent Details -->
+                        <div>
+                            <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 border-b border-slate-100 pb-2">Rent Details</h3>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">Monthly Rent (₹)</label>
+                                    <input type="number" id="monthlyRent" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 font-mono text-sm" value="12000" min="0" step="1000">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">Rent Infl. (%)</label>
+                                    <input type="number" id="rentInfl" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 font-mono text-sm" value="5" step="0.1">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section 3: Growth Rates & Timeline -->
+                        <div>
+                            <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 border-b border-slate-100 pb-2">Growth & Timeline</h3>
+                            <div class="grid grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">Prop. Appr. (%)</label>
+                                    <input type="number" id="propRate" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 font-mono text-sm" value="5" step="0.1">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">Inv. Return (%)</label>
+                                    <input type="number" id="invRate" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 font-mono text-sm" value="10" step="0.1">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Time Horizon (Years)</label>
+                                <input type="number" id="years" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 font-mono text-sm" value="20" min="1" max="50" step="1">
+                            </div>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+
+            <!-- Main Content Area: Chart and Summary -->
+            <div class="lg:col-span-8 flex flex-col gap-6">
+                
+                <!-- Chart Card -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+                    <h2 class="text-lg font-semibold text-slate-800 mb-2">Net Worth Comparison</h2>
+                    <p class="text-sm text-slate-500 mb-4">Tracking property equity (Value - Loan Balance) vs Investment Portfolio.</p>
+                    <div class="w-full h-[350px] relative">
+                        <canvas id="nwChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Milestones Table -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 overflow-hidden">
+                    <h2 class="text-lg font-semibold text-slate-800 mb-4">Key Milestones</h2>
+                    
+                    <div class="overflow-x-auto custom-scrollbar">
+                        <table class="w-full text-left border-collapse min-w-[600px]">
+                            <thead>
+                                <tr class="bg-slate-50 border-y border-slate-200 text-sm">
+                                    <th class="py-3 px-4 font-semibold text-slate-600">Timeline</th>
+                                    <th class="py-3 px-4 font-semibold text-blue-700">Buy Net Worth</th>
+                                    <th class="py-3 px-4 font-semibold text-emerald-700">Rent Net Worth</th>
+                                    <th class="py-3 px-4 font-semibold text-slate-600">Difference</th>
+                                </tr>
+                            </thead>
+                            <tbody id="milestonesTableBody" class="text-sm divide-y divide-slate-100">
+                                <!-- Populated via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        let myChart = null;
+        const fmtCurrency = (val) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val || 0);
+
+        // Sync DP Slider and Input
+        const dpSlider = document.getElementById('dpSlider');
+        const dpInput = document.getElementById('dpInput');
+        const dpDisplay = document.getElementById('dpDisplay');
+
+        dpSlider.addEventListener('input', (e) => {
+            dpInput.value = e.target.value;
+            dpDisplay.textContent = e.target.value + '%';
+            calculate();
+        });
+
+        dpInput.addEventListener('input', (e) => {
+            let val = parseInt(e.target.value);
+            if(val < 0) val = 0;
+            if(val > 100) val = 100;
+            dpSlider.value = val;
+            dpDisplay.textContent = val + '%';
+            calculate();
+        });
+
+        function calculate() {
+            // Fetch Inputs
+            const propPrice = parseFloat(document.getElementById('propPrice').value) || 0;
+            const dpPercent = parseFloat(document.getElementById('dpInput').value) || 0;
+            const loanRate = parseFloat(document.getElementById('loanRate').value) || 0;
+            const loanTenure = parseFloat(document.getElementById('loanTenure').value) || 0;
+            
+            const propRate = parseFloat(document.getElementById('propRate').value) || 0;
+            const monthlyRent = parseFloat(document.getElementById('monthlyRent').value) || 0;
+            const rentInfl = parseFloat(document.getElementById('rentInfl').value) || 0;
+            const invRate = parseFloat(document.getElementById('invRate').value) || 0;
+            const years = parseInt(document.getElementById('years').value) || 20;
+
+            // Derived Loan Metrics
+            const dpAmount = propPrice * (dpPercent / 100);
+            document.getElementById('dpAmountDisplay').textContent = fmtCurrency(dpAmount);
+            
+            let loanAmount = propPrice - dpAmount;
+            const r_loan_monthly = loanRate / 12 / 100;
+            const loanMonths = loanTenure * 12;
+            
+            let emi = 0;
+            if (loanAmount > 0) {
+                if (r_loan_monthly > 0 && loanMonths > 0) {
+                    emi = loanAmount * r_loan_monthly * Math.pow(1 + r_loan_monthly, loanMonths) / (Math.pow(1 + r_loan_monthly, loanMonths) - 1);
+                } else if (loanMonths > 0) {
+                    emi = loanAmount / loanMonths;
+                }
+            }
+            document.getElementById('emiDisplay').textContent = fmtCurrency(emi);
+
+            // Monthly equivalents for growth (geometric)
+            const r_prop_monthly = Math.pow(1 + propRate / 100, 1 / 12) - 1;
+            const r_inv_monthly = Math.pow(1 + invRate / 100, 1 / 12) - 1;
+
+            // Initialize simulation variables
+            let currentPropVal = propPrice;
+            let currentLoanBalance = loanAmount;
+            
+            let rentPortfolio = dpAmount; // Renter invests down payment upfront
+            let currentRent = monthlyRent;
+
+            // Data tracking arrays
+            const labels = ['Year 0'];
+            const buyNWData = [currentPropVal - currentLoanBalance];
+            const rentNWData = [rentPortfolio];
+            const milestonesData = [];
+
+            const totalMonths = years * 12;
+
+            // Monthly Simulation Loop
+            for (let m = 1; m <= totalMonths; m++) {
+                
+                // --- BUYER ---
+                currentPropVal = currentPropVal * (1 + r_prop_monthly);
+                
+                let actualEMIpaid = 0;
+                if (currentLoanBalance > 0) {
+                    let interest = currentLoanBalance * r_loan_monthly;
+                    let principal = emi - interest;
+                    
+                    if (currentLoanBalance < principal) {
+                        actualEMIpaid = currentLoanBalance + interest;
+                        currentLoanBalance = 0; // Loan paid off early or exactly
+                    } else {
+                        actualEMIpaid = emi;
+                        currentLoanBalance -= principal;
+                    }
+                }
+
+                // --- RENTER ---
+                rentPortfolio = rentPortfolio * (1 + r_inv_monthly);
+                let cashFlowDifference = actualEMIpaid - currentRent;
+                rentPortfolio += cashFlowDifference; // Invest surplus, or withdraw if negative
+
+                // Yearly tasks (record data, inflate rent)
+                if (m % 12 === 0) {
+                    let year = m / 12;
+                    labels.push(`Year ${year}`);
+                    
+                    let buyNetWorth = currentPropVal - currentLoanBalance;
+                    buyNWData.push(buyNetWorth);
+                    rentNWData.push(rentPortfolio);
+
+                    // Track milestones (every 5 years and the final year)
+                    if (year % 5 === 0 || year === years) {
+                        milestonesData.push({
+                            year: year,
+                            buyNW: buyNetWorth,
+                            rentNW: rentPortfolio
+                        });
+                    }
+                    
+                    // Inflate rent annually
+                    currentRent = currentRent * (1 + rentInfl / 100);
+                }
+            }
+
+            // Update UI
+            updateChart(labels, buyNWData, rentNWData);
+            updateMilestonesTable(milestonesData);
+        }
+
+        function updateChart(labels, buyData, rentData) {
+            const ctx = document.getElementById('nwChart').getContext('2d');
+
+            if (myChart) {
+                myChart.data.labels = labels;
+                myChart.data.datasets[0].data = buyData;
+                myChart.data.datasets[1].data = rentData;
+                myChart.update();
+                return;
+            }
+
+            Chart.defaults.font.family = "'Inter', sans-serif";
+
+            myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Buy Net Worth (Equity)',
+                            data: buyData,
+                            borderColor: '#2563eb', // blue-600
+                            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            pointHoverRadius: 5,
+                            tension: 0.2,
+                            fill: true
+                        },
+                        {
+                            label: 'Rent Net Worth (Investments)',
+                            data: rentData,
+                            borderColor: '#059669', // emerald-600
+                            backgroundColor: 'rgba(5, 150, 105, 0.1)',
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            pointHoverRadius: 5,
+                            tension: 0.2,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        tooltip: {
+                            backgroundColor: '#1e293b',
+                            padding: 12,
+                            callbacks: {
+                                label: (ctx) => `${ctx.dataset.label}: ${fmtCurrency(ctx.raw)}`
+                            }
+                        },
+                        legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 8 } }
+                    },
+                    scales: {
+                        y: {
+                            grid: { color: '#f1f5f9', drawBorder: false },
+                            ticks: {
+                                callback: (value) => {
+                                    if (Math.abs(value) >= 10000000) return `₹${(value / 10000000).toFixed(1)}Cr`;
+                                    if (Math.abs(value) >= 100000) return `₹${(value / 100000).toFixed(0)}L`;
+                                    return `₹${value}`;
+                                }
+                            }
+                        },
+                        x: { grid: { display: false }, ticks: { maxTicksLimit: 10 } }
+                    }
+                }
+            });
+        }
+
+        function updateMilestonesTable(milestones) {
+            const tbody = document.getElementById('milestonesTableBody');
+            tbody.innerHTML = '';
+
+            // Ensure unique years if year matches a multiple of 5
+            const uniqueMilestones = Array.from(new Map(milestones.map(item => [item.year, item])).values());
+
+            uniqueMilestones.forEach(m => {
+                const diff = m.rentNW - m.buyNW;
+                let diffHtml = '';
+                
+                if (diff > 0) {
+                    diffHtml = `<span class="text-emerald-600 font-medium">+${fmtCurrency(diff)} (Rent Wins)</span>`;
+                } else if (diff < 0) {
+                    diffHtml = `<span class="text-blue-600 font-medium">+${fmtCurrency(Math.abs(diff))} (Buy Wins)</span>`;
+                } else {
+                    diffHtml = `<span class="text-slate-500">Tie</span>`;
+                }
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="py-3 px-4 text-slate-800 font-medium">Year ${m.year}</td>
+                        <td class="py-3 px-4 font-mono">${fmtCurrency(m.buyNW)}</td>
+                        <td class="py-3 px-4 font-mono">${fmtCurrency(m.rentNW)}</td>
+                        <td class="py-3 px-4 font-mono text-sm">${diffHtml}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        // Attach Event Listeners to all text/number inputs
+        document.querySelectorAll('input[type=number]').forEach(input => {
+            input.addEventListener('input', calculate);
+        });
+
+        // Initial Calculation
+        window.onload = calculate;
+
+    </script>
+</body>
+</html>
